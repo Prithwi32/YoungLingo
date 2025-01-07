@@ -154,7 +154,7 @@ export default function FocusTraining() {
         {!selectedLevel ? (
           <Card className="text-center max-w-md mx-auto">
             <p className="text-xl mb-4 text-gray-700">Choose a level to start:</p>
-            <div className="space-x-4 flex justify-center">
+            <div className="space-x-4 flex justify-center text-orange-800">
               {levels.map(level => (
                 <Button key={level} onClick={() => handleLevelSelect(level)} variant="secondary">
                   {level}
@@ -165,7 +165,7 @@ export default function FocusTraining() {
         ) : !selectedFormat ? (
           <Card className="text-center max-w-md mx-auto">
             <p className="text-xl mb-4 text-gray-700">Choose a format to continue:</p>
-            <div className="space-x-4 flex justify-center">
+            <div className="space-x-4 flex justify-center text-orange-800">
               {formats.map(format => (
                 <Button key={format} onClick={() => handleFormatSelect(format)} variant="secondary">
                   {format}
