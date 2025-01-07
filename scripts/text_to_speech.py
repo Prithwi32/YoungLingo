@@ -2,23 +2,30 @@ import sys
 from gtts import gTTS
 import base64
 import os
+import tempfile
 
 def text_to_speech(text):
-    tts = gTTS(text=text, lang='en')
-    temp_filename = 'temp.mp3'
-    tts.save(temp_filename)
+    try:
+        tts = gTTS(text=text, lang='en')
+        with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
+            temp_filename = temp_file.name
+            tts.save(temp_filename)
 
-    with open(temp_filename, 'rb') as audio_file:
-        audio_data = audio_file.read()
-        base64_audio = base64.b64encode(audio_data).decode('utf-8')
+        with open(temp_filename, 'rb') as audio_file:
+            audio_data = audio_file.read()
+            base64_audio = base64.b64encode(audio_data).decode('utf-8')
 
-    # Ensure the file is closed before attempting to delete it
-    # audio_file.close()
-
-    # os.remove(temp_filename)  # Clean up the temporary file
-    return base64_audio
+        os.unlink(temp_filename)  # Safely delete the temporary file
+        return base64_audio
+    except Exception as e:
+        print(f"Error in text_to_speech: {str(e)}", file=sys.stderr)
+        return None
 
 if __name__ == "__main__":
     input_text = sys.argv[1]
     base64_audio = text_to_speech(input_text)
-    print(base64_audio)
+    if base64_audio:
+        print(base64_audio)
+    else:
+        sys.exit(1)
+

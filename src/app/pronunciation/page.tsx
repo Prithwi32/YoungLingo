@@ -149,7 +149,7 @@ export default function PronunciationTraining() {
           </Card>
         ) : (
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-4 text-center">
+            <h2 className="text-2xl font-semibold mb-4 text-center text-purple-700">
               Level: {selectedLevel} - Format: {selectedFormat}
             </h2>
             {isLoading ? (
