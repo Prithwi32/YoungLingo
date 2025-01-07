@@ -1,17 +1,24 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Header from "../components/Header";
-import Button from "../components/Button";
-import Card from "../components/Card";
+import { useState, useEffect, useRef } from 'react';
+import Header from '../components/Header';
+import Button from '../components/Button';
+import Card from '../components/Card';
+import Spinner from '../components/Spinner';
 
-type Level = "BASIC" | "MEDIUM" | "HARD";
-type Format = "LETTER" | "WORD" | "SENTENCE";
+type Level = 'BASIC' | 'MEDIUM' | 'HARD';
+type Format = 'LETTER' | 'WORD' | 'SENTENCE';
 
 interface Question {
   text: string;
   difficulty: Level;
   format: Format;
+}
+
+interface Answer {
+  audioBlob: Blob | null;
+  transcript: string;
+  accuracy: number | null;
 }
 
 const generateRandomLetters = (length: number) =>
@@ -24,14 +31,18 @@ export default function PronunciationTraining() {
   const [selectedFormat, setSelectedFormat] = useState<Format | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [results, setResults] = useState<number[]>(Array(10).fill(0));
+  const [answers, setAnswers] = useState<Answer[]>([]);
   const [overallScore, setOverallScore] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
-  const levels: Level[] = ["BASIC", "MEDIUM", "HARD"];
-  const formats: Format[] = ["LETTER", "WORD", "SENTENCE"];
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  const levels: Level[] = ['BASIC', 'MEDIUM', 'HARD'];
+  const formats: Format[] = ['LETTER', 'WORD', 'SENTENCE'];
 
   useEffect(() => {
     if (selectedLevel && selectedFormat) {
@@ -39,36 +50,95 @@ export default function PronunciationTraining() {
     }
   }, [selectedLevel, selectedFormat]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setAnswers(prev => {
+          const newAnswers = [...prev];
+          newAnswers[currentQuestionIndex] = {
+            ...newAnswers[currentQuestionIndex],
+            transcript: transcript
+          };
+          return newAnswers;
+        });
+        compareAnswer(transcript, questions[currentQuestionIndex].text);
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        setIsRecording(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsRecording(false);
+      };
+    }
+  }, [currentQuestionIndex, questions]);
+
   const generateQuestions = async (level: Level, format: Format) => {
     setIsLoading(true);
     setError(null);
 
-    if (format === "LETTER") {
+    if (format === 'LETTER') {
       const letters = generateRandomLetters(10).map((text) => ({
         text,
         difficulty: level,
         format,
       }));
       setQuestions(letters);
+      setAnswers(new Array(10).fill({ audioBlob: null, transcript: '', accuracy: null }));
       setIsLoading(false);
     } else {
       try {
-        const response = await fetch("/api/generateQuestions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('/api/generateQuestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ level, format }),
         });
 
-        if (!response.ok) throw new Error("Failed to fetch questions");
+        if (!response.ok) throw new Error('Failed to fetch questions');
 
         const generatedQuestions = await response.json();
         setQuestions(generatedQuestions);
+        setAnswers(new Array(generatedQuestions.length).fill({ audioBlob: null, transcript: '', accuracy: null }));
       } catch (error) {
-        console.error("Error generating questions:", error);
-        setError("Failed to generate questions. Please try again later.");
+        console.error('Error generating questions:', error);
+        setError('Failed to generate questions. Please try again later.');
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const compareAnswer = async (userAnswer: string, correctAnswer: string) => {
+    try {
+      const response = await fetch('/api/compareAnswer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userAnswer, correctAnswer }),
+      });
+
+      if (!response.ok) throw new Error('Failed to compare answer');
+
+      const { accuracy } = await response.json();
+
+      setAnswers(prev => {
+        const newAnswers = [...prev];
+        newAnswers[currentQuestionIndex] = {
+          ...newAnswers[currentQuestionIndex],
+          accuracy: accuracy
+        };
+        return newAnswers;
+      });
+    } catch (error) {
+      console.error('Error comparing answer:', error);
+      setError('Failed to compare answer. Please try again.');
     }
   };
 
@@ -80,53 +150,70 @@ export default function PronunciationTraining() {
     setSelectedFormat(format);
   };
 
-  const handleSubmit = () => {
-    const simulatedResult = Math.floor(Math.random() * 101);
-    setResults((prevResults) => {
-      const newResults = [...prevResults];
-      newResults[currentQuestionIndex] = simulatedResult;
-      return newResults;
-    });
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          setAnswers(prev => {
+            const newAnswers = [...prev];
+            newAnswers[currentQuestionIndex] = {
+              ...newAnswers[currentQuestionIndex],
+              audioBlob: event.data
+            };
+            return newAnswers;
+          });
+        }
+      };
 
-    if (currentQuestionIndex === 9) {
-      setIsCompleted(true);
-    } else {
-      handleNavigation("next");
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+      }
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      setError('Failed to start recording. Please check your microphone permissions.');
     }
   };
 
-  const handleNavigation = (direction: "next" | "previous") => {
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsRecording(false);
+  };
+
+  const handleNavigation = (direction: 'next' | 'previous') => {
     setCurrentQuestionIndex((prevIndex) =>
-      direction === "next"
+      direction === 'next'
         ? Math.min(prevIndex + 1, questions.length - 1)
         : Math.max(prevIndex - 1, 0)
     );
   };
 
   const handleFinalSubmit = () => {
-    const totalScore = results.reduce((sum, score) => sum + score, 0);
-    setOverallScore(totalScore / 10);
+    setIsCompleted(true);
+    const totalAccuracy = answers.reduce((sum, answer) => sum + (answer.accuracy || 0), 0);
+    setOverallScore(totalAccuracy / answers.length);
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-indigo-50">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-center text-indigo-600">
-          Pronunciation Training
-        </h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-indigo-600">Pronunciation Training</h1>
         {!selectedLevel ? (
           <Card className="text-center max-w-md mx-auto">
-            <p className="text-xl mb-4 text-gray-700">
-              Choose a difficulty level:
-            </p>
+            <p className="text-xl mb-4 text-gray-700">Choose a difficulty level:</p>
             <div className="space-x-4 flex justify-center">
               {levels.map((level) => (
-                <Button
-                  key={level}
-                  onClick={() => handleLevelSelect(level)}
-                  variant="secondary"
-                >
+                <Button key={level} onClick={() => handleLevelSelect(level)} variant="secondary">
                   {level}
                 </Button>
               ))}
@@ -137,11 +224,7 @@ export default function PronunciationTraining() {
             <p className="text-xl mb-4 text-gray-700">Choose a format:</p>
             <div className="space-x-4 flex justify-center">
               {formats.map((format) => (
-                <Button
-                  key={format}
-                  onClick={() => handleFormatSelect(format)}
-                  variant="secondary"
-                >
+                <Button key={format} onClick={() => handleFormatSelect(format)} variant="secondary">
                   {format}
                 </Button>
               ))}
@@ -153,46 +236,42 @@ export default function PronunciationTraining() {
               Level: {selectedLevel} - Format: {selectedFormat}
             </h2>
             {isLoading ? (
-              <Card className="text-center">
-                <p className="text-xl text-gray-700">Loading questions...</p>
-              </Card>
+              <Spinner />
             ) : error ? (
               <Card className="text-center">
                 <p className="text-xl text-red-600">{error}</p>
-                <Button
-                  onClick={() =>
-                    generateQuestions(selectedLevel, selectedFormat)
-                  }
-                  className="mt-4 text-gray-500"
-                >
+                <Button onClick={() => generateQuestions(selectedLevel, selectedFormat)} className="mt-4">
                   Try Again
                 </Button>
               </Card>
-            ) : questions.length > 0 ? (
-              <>
+            ) : questions.length > 0 && !isCompleted ? (
+              <div>
                 <Card className="mb-6">
                   <p className="text-xl mb-4 text-center text-gray-800">
                     {questions[currentQuestionIndex]?.text}
                   </p>
                   <div className="text-center mb-4">
-                    <Button onClick={handleSubmit}>
-                      {isCompleted ? "Retry" : "Start Recording"}
+                    <Button onClick={isRecording ? stopRecording : startRecording}>
+                      {isRecording ? 'Stop Recording' : 'Start Recording'}
                     </Button>
                   </div>
-                </Card>
-                {results[currentQuestionIndex] !== 0 && (
-                  <Card className="text-center mb-6">
-                    <h3 className="text-xl font-semibold mb-2 text-gray-800">
-                      Result:
-                    </h3>
-                    <p className="text-3xl font-bold text-indigo-600">
-                      {results[currentQuestionIndex]}%
+                  {answers[currentQuestionIndex]?.transcript && (
+                    <p className="text-center text-gray-600 mt-2">
+                      Your answer: {answers[currentQuestionIndex].transcript}
                     </p>
-                  </Card>
-                )}
-                <div className="flex justify-between items-center">
+                  )}
+                  {answers[currentQuestionIndex]?.accuracy !== null && (
+                    <p className="text-center text-blue-600 mt-2">
+                      Accuracy: {answers[currentQuestionIndex].accuracy}%
+                    </p>
+                  )}
+                </Card>
+                <div className="mb-6 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}></div>
+                </div>
+                <div className="flex justify-between items-center mb-6">
                   <Button
-                    onClick={() => handleNavigation("previous")}
+                    onClick={() => handleNavigation('previous')}
                     disabled={currentQuestionIndex === 0}
                     variant="secondary"
                   >
@@ -200,39 +279,44 @@ export default function PronunciationTraining() {
                   </Button>
                   <div className="text-center text-orange-500">
                     <p className="text-lg font-semibold">
-                      Progress: {currentQuestionIndex + 1} / 10
+                      Progress: {currentQuestionIndex + 1} / {questions.length}
                     </p>
                   </div>
                   <Button
-                    onClick={() => handleNavigation("next")}
+                    onClick={() => handleNavigation('next')}
                     disabled={currentQuestionIndex === questions.length - 1}
                     variant="secondary"
                   >
                     Next
                   </Button>
                 </div>
-                {isCompleted && (
+                {currentQuestionIndex === questions.length - 1 && !isCompleted && (
                   <div className="text-center mt-6">
                     <Button onClick={handleFinalSubmit}>
                       Submit All Answers
                     </Button>
                   </div>
                 )}
-                {overallScore !== null && (
+                </div>
+              ) : null}
+                {isCompleted && (
                   <Card className="text-center mt-6">
-                    <h3 className="text-xl font-semibold mb-2">
-                      Overall Score:
-                    </h3>
-                    <p className="text-3xl font-bold text-indigo-600">
-                      {overallScore.toFixed(2)}%
-                    </p>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-800">Results:</h3>
+                    {questions.map((question, index) => (
+                      <div key={index} className="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <p className="font-semibold text-gray-800">Question {index + 1}: {question.text}</p>
+                        <p className='text-purple-800'>Your answer: {answers[index].transcript}</p>
+                        <p className="text-blue-600">Accuracy: {answers[index].accuracy}%</p>
+                      </div>
+                    ))}
+                    <h3 className="text-xl font-semibold mt-4 text-gray-800">Overall Score:</h3>
+                    <p className="text-3xl font-bold text-indigo-600">{overallScore?.toFixed(2)}%</p>
                   </Card>
                 )}
-              </>
-            ) : null}
-          </div>
+              </div>
         )}
       </main>
     </div>
   );
 }
+
