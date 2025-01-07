@@ -150,7 +150,7 @@ export default function FocusTraining() {
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-center text-blue-600">Focus Training</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-purple-700">Focus Training</h1>
         {!selectedLevel ? (
           <Card className="text-center max-w-md mx-auto">
             <p className="text-xl mb-4 text-gray-700">Choose a level to start:</p>
