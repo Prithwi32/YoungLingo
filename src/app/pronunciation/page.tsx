@@ -207,7 +207,9 @@ export default function PronunciationTraining() {
     <div className="min-h-screen flex flex-col bg-indigo-50">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-center text-indigo-600">Pronunciation Training</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-purple-700">
+          Pronunciation Training
+        </h1>
         {!selectedLevel ? (
           <Card className="text-center max-w-md mx-auto">
             <p className="text-xl mb-4 text-gray-700">Choose a difficulty level:</p>

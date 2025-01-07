@@ -10,8 +10,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export default function Button({ href, children, variant = 'primary', icon, ...props }: ButtonProps) {
   const baseClasses = "px-4 py-2 rounded font-semibold transition-colors flex items-center justify-center"
   const variantClasses = {
-    primary: "bg-indigo-600 text-white hover:bg-indigo-700",
-    secondary: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200"
+    primary: "bg-orange-600 text-white hover:bg-orange-700",
+    secondary: "bg-orange-100 text-white-800 hover:bg-orange-200"
   }
   
   const className = `${baseClasses} ${variantClasses[variant]} ${props.className || ''}`
