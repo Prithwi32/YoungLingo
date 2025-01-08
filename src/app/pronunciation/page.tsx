@@ -5,6 +5,8 @@ import Header from '../components/Header';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import Spinner from '../components/Spinner';
+import ProunciationImage from '../images/pronounciation.png'
+import Image from 'next/image'
 
 type Level = 'BASIC' | 'MEDIUM' | 'HARD';
 type Format = 'LETTER' | 'WORD' | 'SENTENCE';
@@ -204,18 +206,30 @@ export default function PronunciationTraining() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-indigo-50">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-center text-purple-700">
+<div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-100 to-purple-100">
+  <Header />
+    <main className="flex-grow flex items-center justify-center mx-auto px-4 py-8">
+      <div className="max-w-6xl w-full flex flex-col md:flex-row mb-6 items-center gap-32">
+          <div className="md:w-1/2 relative ">
+              <Image 
+                src={ProunciationImage} 
+                alt="Young person learning languages" 
+                width={400} 
+                height={400} 
+                className="rounded-lg shadow-2xl animate-float mt-10 "
+              />
+            </div>
+          <div>
+        <h1 className="text-4xl font-bold mb-10 text-center text-orange-500 md:text-5xl ">
           Pronunciation Training
         </h1>
         {!selectedLevel ? (
-          <Card className="text-center max-w-md mx-auto">
-            <p className="text-xl mb-4 text-gray-700">Choose a difficulty level:</p>
+          <Card className="text-center max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg hover:shadow-xl ">
+            <p className="text-xl mb-4 text-purple-700 p-8">Choose a difficulty level:</p>
             <div className="space-x-4 flex justify-center text-orange-800">
               {levels.map((level) => (
-                <Button key={level} onClick={() => handleLevelSelect(level)} variant="secondary">
+                <Button key={level} onClick={() => handleLevelSelect(level)} variant="secondary"
+                className='p-5 bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3 rounded-lg transition-colors duration-300'>
                   {level}
                 </Button>
               ))}
@@ -223,10 +237,11 @@ export default function PronunciationTraining() {
           </Card>
         ) : !selectedFormat ? (
           <Card className="text-center max-w-md mx-auto">
-            <p className="text-xl mb-4 text-gray-700">Choose a format:</p>
+            <p className="text-xl mb-4 text-purple-700">Choose a format:</p>
             <div className="space-x-4 flex justify-center text-orange-800">
               {formats.map((format) => (
-                <Button key={format} onClick={() => handleFormatSelect(format)} variant="secondary">
+                <Button key={format} onClick={() => handleFormatSelect(format)} variant="secondary"
+                className='bg-orange-600 hover:bg-orange-500 text-white font-semibold p-3 rounded-lg transition-colors duration-300'>
                   {format}
                 </Button>
               ))}
@@ -276,6 +291,7 @@ export default function PronunciationTraining() {
                     onClick={() => handleNavigation('previous')}
                     disabled={currentQuestionIndex === 0}
                     variant="secondary"
+                    className='bg-purple-800 p-3 rounded-full text-white'
                   >
                     Previous
                   </Button>
@@ -288,6 +304,7 @@ export default function PronunciationTraining() {
                     onClick={() => handleNavigation('next')}
                     disabled={currentQuestionIndex === questions.length - 1}
                     variant="secondary"
+                    className='bg-purple-800 px-6 py-3 rounded-full text-white'
                   >
                     Next
                   </Button>
@@ -317,6 +334,8 @@ export default function PronunciationTraining() {
                 )}
               </div>
         )}
+        </div>
+        </div>
       </main>
     </div>
   );

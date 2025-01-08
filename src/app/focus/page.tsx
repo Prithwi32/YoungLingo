@@ -5,6 +5,9 @@ import Header from '../components/Header';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import Spinner from '../components/Spinner';
+import ProunciationImage from '../images/focusImage.png'
+import Image from 'next/image'
+
 
 type Level = 'BASIC' | 'MEDIUM' | 'HARD';
 type Format = 'LETTER' | 'WORD' | 'SENTENCE';
@@ -147,27 +150,43 @@ export default function FocusTraining() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-center text-purple-700">Focus Training</h1>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-100 to-purple-100">
+    <Header />
+      <main className="flex-grow flex items-center justify-center mx-auto px-4 py-8">
+        <div className="max-w-6xl w-full flex flex-col md:flex-row mb-6 items-center gap-24">
+            <div className="md:w-1/2 relative ">
+                <Image 
+                  src={ProunciationImage} 
+                  alt="Young person learning languages" 
+                  width={400} 
+                  height={400} 
+                  className="rounded-lg shadow-2xl animate-float mt-10 "
+                />
+              </div>
+            <div>
+          <h1 className="text-4xl font-bold mb-10 text-center text-orange-500 md:text-5xl ">
+            Focus Training
+          </h1>
         {!selectedLevel ? (
-          <Card className="text-center max-w-md mx-auto">
-            <p className="text-xl mb-4 text-gray-700">Choose a level to start:</p>
+          <Card className="text-center max-w-lg mx-auto  bg-white p-8 rounded-xl shadow-lg hover:shadow-xl ">
+            <p className="text-xl mb-4 text-gray-700 p-10">Choose a level to start:</p>
             <div className="space-x-4 flex justify-center text-orange-800">
               {levels.map(level => (
-                <Button key={level} onClick={() => handleLevelSelect(level)} variant="secondary">
+                <Button key={level} onClick={() => handleLevelSelect(level)} variant="secondary"
+                className='p-10 bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3 rounded-lg transition-colors duration-300'>
                   {level}
                 </Button>
               ))}
             </div>
           </Card>
         ) : !selectedFormat ? (
-          <Card className="text-center max-w-md mx-auto">
-            <p className="text-xl mb-4 text-gray-700">Choose a format to continue:</p>
+          <Card className="text-center max-w-md mx-auto ">
+            <p className="p-8 text-xl mb-4 text-purple-700">Choose a format to continue:</p>
             <div className="space-x-4 flex justify-center text-orange-800">
               {formats.map(format => (
-                <Button key={format} onClick={() => handleFormatSelect(format)} variant="secondary">
+                <Button key={format} onClick={() => handleFormatSelect(format)} variant="secondary"
+                className='p-3 bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3 rounded-lg transition-colors duration-300'>
+            
                   {format}
                 </Button>
               ))}
@@ -204,10 +223,14 @@ export default function FocusTraining() {
                   placeholder="Type what you hear..."
                 />
                 <div className="flex justify-between mt-4">
-                  <Button onClick={handlePrevious} disabled={currentQuestionIndex === 0} variant="secondary">
+                  <Button onClick={handlePrevious} disabled={currentQuestionIndex === 0} variant="secondary"
+                    className='bg-purple-800 p-3 rounded-full text-white'
+                    >
                     Previous
                   </Button>
-                  <Button onClick={handleCheckAnswer}>
+                  <Button onClick={handleCheckAnswer}
+                    className='bg-purple-800 p-3 rounded-full text-white'
+                    >
                     {currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next'}
                   </Button>
                 </div>
@@ -236,6 +259,8 @@ export default function FocusTraining() {
             )}
           </div>
         )}
+        </div>
+        </div>
       </main>
     </div>
   );
