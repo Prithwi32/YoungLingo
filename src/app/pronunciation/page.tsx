@@ -5,7 +5,6 @@ import Header from "../components/Header";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Spinner from "../components/Spinner";
-import ProunciationImage from "../images/pronounciation.png";
 import Image from "next/image";
 
 type Level = "BASIC" | "MEDIUM" | "HARD";
@@ -15,7 +14,7 @@ interface Question {
   text: string;
   difficulty: Level;
   format: Format;
-  isCorrect: boolean;
+  isCorrect?: boolean;
 }
 
 interface Answer {
@@ -98,6 +97,7 @@ export default function PronunciationTraining() {
         text,
         difficulty: level,
         format,
+        isCorrect: false,
       }));
       setQuestions(letters);
       setAnswers(
@@ -237,7 +237,7 @@ export default function PronunciationTraining() {
           {!isCompleted && (
             <div className="md:w-1/2 relative ">
               <Image
-                src={ProunciationImage}
+                src="/images/pronounciation.png"
                 alt="Young person learning languages"
                 width={400}
                 height={400}

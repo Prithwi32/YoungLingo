@@ -2,11 +2,6 @@ import Header from "./components/Header";
 import Button from "./components/Button";
 import Footer from "./components/Footer";
 import Image from "next/image";
-import Logo from "../app/images/logo2.png";
-import Image1 from "../app/images/AI_Powered_image.png";
-import Image2 from "../app/images/focus.png";
-import Image3 from "../app/images/interaction.png";
-import Image4 from "../app/images/progress_tracting.png";
 
 export default function Home() {
   return (
@@ -32,7 +27,7 @@ export default function Home() {
             </div>
             <div className="md:w-1/2 relative ">
               <Image
-                src={Logo}
+                src="/images/logo2.png"
                 alt="Young person learning languages"
                 width={400}
                 height={400}
@@ -50,25 +45,25 @@ export default function Home() {
                   title: "AI-powered pronunciation feedback",
                   description:
                     "Get instant feedback on your pronunciation to improve faster.",
-                  image: Image1,
+                  image: "/images/AI_Powered_image.png",
                 },
                 {
                   title: "Personalized focus areas",
                   description:
                     "Our AI analyzes your performance to create tailored learning paths.",
-                  image: Image2,
+                  image: "/images/focus.png",
                 },
                 {
                   title: "Interactive exercises",
                   description:
                     "Engage with fun, interactive exercises for rapid improvement.",
-                  image: Image3,
+                  image: "/images/interaction.png",
                 },
                 {
                   title: "Progress tracking",
                   description:
                     "Monitor your progress with detailed performance analytics.",
-                  image: Image4,
+                  image: "/images/progress_tracting.png",
                 },
               ].map((feature, index) => (
                 <div

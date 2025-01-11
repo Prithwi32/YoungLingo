@@ -5,7 +5,6 @@ import Header from "../components/Header";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Spinner from "../components/Spinner";
-import FocusImage from "../images/focusImage.png";
 import Image from "next/image";
 
 type Level = "BASIC" | "MEDIUM" | "HARD";
@@ -180,7 +179,7 @@ export default function FocusTraining() {
           {!isFinished && (
             <div className="md:w-1/2 relative ">
               <Image
-                src={FocusImage}
+                src="/images/focusImage.png"
                 alt="Young person learning languages"
                 width={400}
                 height={400}
