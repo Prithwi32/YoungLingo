@@ -5,7 +5,7 @@ import Header from "../components/Header";
 import Button from "../components/Button";
 
 export default function GetStarted() {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [, setSelectedOption] = useState<string | null>(null);
 
   const handleOptionSelect = (option: string) => {
     setSelectedOption(option);

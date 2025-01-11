@@ -33,7 +33,7 @@ export default function FocusTraining() {
   const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
   const [overallAccuracy, setOverallAccuracy] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [isFinished, setIsFinished] = useState(false);
 
   const levels: Level[] = ["BASIC", "MEDIUM", "HARD"];
@@ -84,7 +84,8 @@ export default function FocusTraining() {
     } catch (error) {
       console.error("Error fetching questions:", error);
       setError(
-        error.message || "Failed to load questions. Please try again later."
+        "Failed to load questions. Please try again later."
+        // error.message || "Failed to load questions. Please try again later."
       );
     } finally {
       setIsLoading(false);
@@ -149,21 +150,21 @@ export default function FocusTraining() {
     }
   };
 
-  const finishQuiz = () => {
-    const totalAccuracy = userAnswers.reduce(
-      (sum, answer) => sum + answer.accuracy,
-      0
-    );
-    const averageAccuracy = totalAccuracy / questions.length;
-    setOverallAccuracy(averageAccuracy);
-    setIsFinished(true);
-  };
+  // const finishQuiz = () => {
+  //   const totalAccuracy = userAnswers.reduce(
+  //     (sum, answer) => sum + answer.accuracy,
+  //     0
+  //   );
+  //   const averageAccuracy = totalAccuracy / questions.length;
+  //   setOverallAccuracy(averageAccuracy);
+  //   setIsFinished(true);
+  // };
 
-  const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
+  // const handleNext = () => {
+  //   if (currentQuestionIndex < questions.length - 1) {
+  //     setCurrentQuestionIndex(currentQuestionIndex + 1);
+  //   }
+  // };
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
